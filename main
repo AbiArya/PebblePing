@@ -14,11 +14,11 @@ static void bt_handler(bool connected) {
   // Show current connection state
   
    if (connected) {
-    text_layer_set_text(s_output_layer, "123Connected");
+   // text_layer_set_text(s_output_layer, "123Connected");
    // vibes_double_pulse();
 
   } else if(!connected){
-     text_layer_set_text(s_disconnected, "Connected");
+    // text_layer_set_text(s_disconnected, "Connected");
      //connectivity = "Disconnected"
      psleep(500);
      vibes_double_pulse();
@@ -26,7 +26,7 @@ static void bt_handler(bool connected) {
      bt_handler(bluetooth_connection_service_peek());
 
   }else{
-     text_layer_set_text(s_doNothing, "Nothing");
+   //  text_layer_set_text(s_doNothing, "Nothing");
    }
 
     
