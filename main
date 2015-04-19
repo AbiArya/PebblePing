@@ -1,0 +1,108 @@
+#include <pebble.h>
+#include <string.h>
+  
+
+static Window *s_main_window;
+static TextLayer *s_output_layer;
+static TextLayer *s_disconnected;
+static TextLayer *s_doNothing;
+//static char connectivity = "Connected";
+
+
+
+static void bt_handler(bool connected) {
+  // Show current connection state
+  
+   if (connected) {
+    text_layer_set_text(s_output_layer, "123Connected");
+   // vibes_double_pulse();
+
+  } else if(!connected){
+     text_layer_set_text(s_disconnected, "Connected");
+     //connectivity = "Disconnected"
+     psleep(500);
+     vibes_double_pulse();
+     psleep(1000);
+     bt_handler(bluetooth_connection_service_peek());
+
+  }else{
+     text_layer_set_text(s_doNothing, "Nothing");
+   }
+
+    
+
+  }
+  
+  
+ 
+
+
+static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
+  bt_handler(bluetooth_connection_service_peek());
+
+}
+
+static void click_config_provider(void *context) {
+  // Register the ClickHandlers
+  window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
+}
+
+
+static void main_window_load(Window *window) {
+  Layer *window_layer = window_get_root_layer(window);
+  GRect window_bounds = layer_get_bounds(window_layer);
+
+  // Create output TextLayer
+  s_output_layer = text_layer_create(GRect(0, 0, 144, 30));
+  s_disconnected = text_layer_create(GRect(50,30,144,30));
+  s_doNothing = text_layer_create(GRect(75,60,175,30));
+  text_layer_set_text_alignment(s_output_layer, GTextAlignmentCenter);
+  text_layer_set_font(s_output_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+  text_layer_set_text_alignment(s_disconnected, GTextAlignmentRight);
+  text_layer_set_font(s_disconnected, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+  text_layer_set_text_alignment(s_doNothing, GTextAlignmentRight);
+  text_layer_set_font(s_doNothing, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+
+  //text_layer_set_size(s_outout_layer, GSize max_size);
+  layer_add_child(window_layer, text_layer_get_layer(s_output_layer));
+  layer_add_child(window_layer, text_layer_get_layer(s_disconnected));
+  layer_add_child(window_layer, text_layer_get_layer(s_doNothing));
+  window_set_click_config_provider(s_main_window, click_config_provider);
+
+
+  // Show current connection state
+ // bt_handler(bluetooth_connection_service_peek());
+}
+
+static void main_window_unload(Window *window) {
+  // Destroy output TextLayer
+  text_layer_destroy(s_output_layer);
+  text_layer_destroy(s_disconnected);
+  text_layer_destroy(s_doNothing);
+}
+
+static void init(void) {
+  // Create main Window
+  s_main_window = window_create();
+  window_set_window_handlers(s_main_window, (WindowHandlers) {
+    .load = main_window_load,
+    .unload = main_window_unload,
+  });
+  window_stack_push(s_main_window, true);
+
+  // Subscribe to Bluetooth updates
+  
+
+  bluetooth_connection_service_subscribe(bt_handler);
+}
+
+static void deinit(void) {
+  // Destroy main Window
+  window_destroy(s_main_window);
+}
+
+int main(void) {
+  init();
+  app_event_loop();
+  deinit();
+}
